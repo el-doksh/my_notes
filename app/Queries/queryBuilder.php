@@ -2,6 +2,8 @@
 
 namespace App\Queries;
 
+use DB;
+
 class queryBuilder {
 
     public function union($value)

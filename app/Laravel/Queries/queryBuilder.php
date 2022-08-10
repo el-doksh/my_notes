@@ -54,6 +54,26 @@ class queryBuilder {
             SELECT cms_id as id, name,'cms' as model FROM cms_translations
             WHERE name LIKE '% ? %'"
         ))->setBindings([$value])->get();
+        /**
+         * native query
+         * SELECT coin_id as id, name,"coins" as model FROM coins_translations
+            WHERE name LIKE "%test%"
+            UNION
+            SELECT new_id as id, name,"news" as model FROM news_translations
+            WHERE name LIKE "%test%"
+            UNION
+            SELECT country_id as id, name,"countries" as model FROM country_translations
+            WHERE name LIKE "%test%"
+            UNION
+            SELECT imam_id as id, name,"imams" as model FROM imams_translations
+            WHERE name LIKE "%test%"
+            UNION
+            SELECT map_id as id, name,"maps" as model FROM map_translations
+            WHERE name LIKE "%test%"
+            UNION
+            SELECT cms_id as id, name,"cms" as model FROM cms_translations
+            WHERE name LIKE "%test%";
+         */
         return $data;
     }
 }

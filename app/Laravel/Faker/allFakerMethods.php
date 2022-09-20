@@ -37,8 +37,8 @@
     'name' => $faker->word,
     'short_description' => $faker->sentence,
     'description' => $faker->paragraph,
-    'img' => $faker->image(storage_path('images'),400,300, null, false)
-    
+    'img' => $faker->image(storage_path('images'),400,300, null, false),
+    'number' => $this->faker->numberBetween(1,50),
 ];
 
 $values = [];

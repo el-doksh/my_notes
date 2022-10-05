@@ -1,0 +1,20 @@
+unit test:
+
+testing code functions (part of code or functions of code)
+without using database, http request, api request ...etc
+
+ex:
+php artisan make:test WawTest --unit
+
+php artisan test --filter=WawTest
+
+
+feature test (normal test):
+
+for testing apis
+testing pages loads successfully
+testing arrays data
+
+ex:
+php artisan make:test wawtest
+

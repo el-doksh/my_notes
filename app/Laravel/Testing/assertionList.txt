@@ -17,8 +17,8 @@ assertJsonMissing
 assertJsonMissingExact
 assertJsonMissingValidationErrors
 assertJsonPath
-assertJsonMissingPath
-assertJsonStructure
+assertJsonMissingPath //when you want to compare between reponse key and expected values
+assertJsonStructure   //important
 assertJsonValidationErrors
 assertJsonValidationErrorFor
 assertLocation

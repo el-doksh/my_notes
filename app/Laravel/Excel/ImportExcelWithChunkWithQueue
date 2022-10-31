@@ -1,0 +1,144 @@
+<?php
+
+namespace App\Imports\Question;
+
+use App\Models\Category\Category;
+use App\Models\Level\Level;
+use App\Models\Question\Question;
+use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+
+class ImportQuestions implements ToCollection, WithChunkReading, ShouldQueue
+{    
+    //hay5ly el data teinsert kol 300 records lwa7dohom
+    public function chunkSize(): int
+    {
+        return 300;
+    }
+
+    /**
+    * @param Collection $collection
+    */
+    public function collection(Collection $data)
+    {
+        try {
+            foreach ($data as $key => $value) {
+                if($key > 0 && $value[1] && $value[1] != ""  ){
+                    $category = $this->setCategory($value[1]);
+                    $stage = $this->setStage($category, $value[2]);
+                    $level = $this->setLevel($stage, $value[3]);
+                    if ( $value[4] && $value[4] != "") {
+                        $question = $this->setQuestion($value[4], $stage, $level->id);
+                        $answers_indexes = [8, 7, 6, 5];
+                        shuffle($answers_indexes);
+                        foreach ($answers_indexes as $answer_index) {
+                            $this->setAnswer($value[$answer_index], $question, ($answer_index == 5 ? true : false) );
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    private function setCategory($category_name)
+    {
+        $category = Category::whereTranslationLike('name', $category_name)->first();
+        $category_data = [
+            'ar' => [
+                'name' => $category_name
+            ],
+            'public' => 1,
+            'seen' => 1,
+            'parent_id' => 0,
+        ];
+        if ( $category ) {
+            $category->update($category_data);
+        } else {
+            $category = Category::create($category_data);
+        }
+        return $category;
+    }
+
+    private function setStage($category, $stage_name)
+    {
+        $stage_data = [
+            'ar' => [
+                'name' => $stage_name
+            ],
+            'public' => 1,
+            'seen' => 1,
+            'parent_id' => $category->id,
+        ];
+        if ($stage = $category->subCategory()->whereTranslationLike('name', $stage_name)->first() ) {
+            $stage->update($stage_data);
+        } else {
+            $stage = Category::create($stage_data);
+        }
+        return $stage;
+    }
+    
+    private function setLevel($stage, $level_name)
+    { 
+        $level_data = [
+            'ar' => [
+                'name' => $level_name
+            ],
+            'public' => 1,
+        ];
+        
+        if ( $level = $stage->levels()->whereTranslationLike('name', $level_name)->first() ) {
+            $level->update($level_data);
+        } else {
+            $level = Level::create($level_data);
+        }
+        $level->sub_categories()->sync([
+            $stage->id,
+            $stage->parent_id,
+        ]);
+        return $level;
+    }
+
+    private function setQuestion($question_name, $stage, $level_id)
+    {
+        $question_data = [
+            'ar' => [
+                'name' => $question_name
+            ],
+            'time_of_answer_question' => 30,
+            'public' => 1,
+            'seen' => 1,
+        ];
+        $question = Question::create($question_data);
+        $question->categories()->detach();
+        $question->categories()->attach( $stage->parent_id );
+        $question->categories()->attach( $stage->id );
+        $question->levels()->sync( $level_id );
+
+        return $question;
+    }
+
+    private function setAnswer($answer_name, $question, $true_answer = false)
+    {
+        $answer_data = [
+            'ar' => [
+                'name' => $answer_name
+            ],
+            'answer_true' => $true_answer,
+        ];
+        $answer = $question->answers()->whereTranslationLike('name', $answer_name)->first();
+        if ( $answer) {
+            $answer->update($answer_data);
+        } else {
+            $answer = $question->answers()->create($answer_data);
+        }
+        return $answer;
+    }
+    
+}

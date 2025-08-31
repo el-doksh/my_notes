@@ -1,29 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { PlaceholderPattern } from "@/components/ui/placeholder-pattern";
 import { TailwindTable } from "@/components/ui/tailwind-table";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import DeleteTopicModal from "./delete-topic-modal";
-import { TopicItem } from "./topic";
+import { TopicDetailItem } from "./topic-detail";
+import { TopicItem } from "../topics/topic";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Topics',
-        href: '/topics',
+        title: 'topics',
+        href: '/details',
     },
 ];
 
 
-type TopicsData = {
-    topics: TopicItem[];
+type topicsData = {
+    topic : TopicItem;
+    topics: topicDetailItem[];
 }
 
-const TopicsList = ({topics} : TopicsData ) => {
-    const [tableRows, setTableRows] = useState<TopicItem[]>([]);
+const topicsList = ({topics , topic } : topicsData ) => {
+    const [tableRows, setTableRows] = useState<topicDetailItem[]>([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deletedTopic, setDeleteTopic] = useState<TopicItem | null>(null);
+    const [deletedtopicDetail, setDeletetopicDetail] = useState<topicDetailItem | null>(null);
 
     const tableHeaders = [
         {
@@ -47,15 +47,15 @@ const TopicsList = ({topics} : TopicsData ) => {
     
     useEffect(() => {
         setTableRows(
-            topics.map(topic => ({
-                ...topic,
-                parent_name: topic.parent ? topic.parent.name : 'N/A',
-                key: topic.id,
+            topics.map(topicDetail => ({
+                ...topicDetail,
+                parent_name: topicDetail.parent ? topicDetail.parent.name : 'N/A',
+                key: topicDetail.id,
             }))
         )
     }, [topics]);
 
-    const RightActions = <Link href='/topics/create' className="flex items-center space-x-2 font-medium">
+    const RightActions = <Link href={`/details/${topic.url}/create`} className="flex items-center space-x-2 font-medium">
                             <Button>
                                 Create Topic
                             </Button>
@@ -64,13 +64,13 @@ const TopicsList = ({topics} : TopicsData ) => {
     const actionsList = [
         {
             type: 'edit',
-            link :'/topics/:id/edit',
+            link :'/details/:id/edit',
         },
         {
             type: 'delete',
-            link :'/topics/:id',
+            link :'/details/:id',
             onClick: (row: any) => {
-                setDeleteTopic(row);
+                setDeletetopicDetail(row);
                 setShowDeleteModal(true);
             },
         },
@@ -78,7 +78,7 @@ const TopicsList = ({topics} : TopicsData ) => {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs} rightActions={RightActions}>
-            <Head title="Topics" />
+            <Head title="topics" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <TailwindTable 
                     headers={tableHeaders}
@@ -88,9 +88,8 @@ const TopicsList = ({topics} : TopicsData ) => {
                 >
                 </TailwindTable>
             </div>
-            {showDeleteModal && <DeleteTopicModal topic={deletedTopic} onCancel={() => setShowDeleteModal(false)} onConfirm={() => setShowDeleteModal(false)} />}
         </AppLayout>
     );
 }
 
-export default TopicsList;
+export default topicsList;

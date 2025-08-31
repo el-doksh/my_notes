@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\TopicController;
+use App\Http\Controllers\TopicDetailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -9,6 +10,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::resource('/topics', TopicController::class);
+Route::resource('/details/{url}', TopicDetailController::class);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

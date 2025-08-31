@@ -6,6 +6,8 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
+import useTopics from '@/hooks/use-topics';
+import { useEffect, useState } from 'react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -34,6 +36,23 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { topics, refreshTopics } = useTopics();
+    const[navItems, setNavItems] = useState<NavItem[]>(mainNavItems);
+    
+    useEffect(()=> {
+        const dynamicNavItems : NavItem[] = [];
+        topics.forEach(topic => {
+            dynamicNavItems.push({
+                title: topic.name,
+                url: `/details/${topic.url}`,
+                icon: Folder,
+            });
+        });
+
+        setNavItems([...mainNavItems, ...dynamicNavItems]);
+    }, [topics]);
+
+    
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -49,7 +68,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>

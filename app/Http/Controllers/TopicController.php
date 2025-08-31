@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Topic;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Requests\TopicRequest;
+use Illuminate\Support\Facades\Auth;
 
 class TopicController extends Controller
 {
@@ -13,7 +15,9 @@ class TopicController extends Controller
      */
     public function index()
     {
-        return Inertia::render('topics/list');
+        $topics = Topic::with('creator', 'parent')->latest()->get();
+
+        return Inertia::render('topics/list', compact('topics'));
     }
 
     /**
@@ -21,15 +25,25 @@ class TopicController extends Controller
      */
     public function create()
     {
-        //
+        $topics = Topic::all();
+
+        return Inertia::render('topics/edit', compact('topics'));
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TopicRequest $request)
     {
-        //
+        $input = $request->validated();
+        $input['created_by'] = Auth::user()->id;
+
+
+        Topic::create($input);
+
+        return redirect()->intended(route('topics.index', absolute: false));
+        
     }
 
     /**
@@ -45,15 +59,22 @@ class TopicController extends Controller
      */
     public function edit(Topic $topic)
     {
-        //
+        $topics = Topic::whereNot('id', $topic->id)->get();
+        
+        return Inertia::render('topics/edit', compact('topic', 'topics'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Topic $topic)
+    public function update(TopicRequest $request, Topic $topic)
     {
-        //
+        $input = $request->validated();
+        $input['updated_by'] = Auth::user()->id;
+
+        $topic->update($input);
+
+        return redirect()->intended(route('topics.index', absolute: false));
     }
 
     /**
@@ -61,6 +82,12 @@ class TopicController extends Controller
      */
     public function destroy(Topic $topic)
     {
-        //
+        try {
+            $topic->delete();
+            return redirect()->intended(route('topics.index', absolute: false));
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }
